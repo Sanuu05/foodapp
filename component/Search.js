@@ -1,315 +1,453 @@
-import { StyleSheet, Text, View, FlatList, TouchableHighlight, Image, TextInput, ScrollView, Dimensions } from 'react-native'
+import { StyleSheet, Text, View, FlatList, TouchableHighlight, Image, TextInput, ScrollView, Dimensions, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { useDispatch, useSelector } from 'react-redux';
 import { getProduct } from '../action/product';
 import { SafeAreaView } from 'react-native-safe-area-context';
-const { width } = Dimensions.get('screen')
+import {
+  useFonts,
+  Alegreya_400Regular,
+  Alegreya_400Regular_Italic,
+  Alegreya_500Medium,
+  Alegreya_500Medium_Italic,
+  Alegreya_700Bold,
+  Alegreya_700Bold_Italic,
+  Alegreya_800ExtraBold,
+  Alegreya_800ExtraBold_Italic,
+  Alegreya_900Black,
+  Alegreya_900Black_Italic
+} from '@expo-google-fonts/alegreya'
+
+const { width, height } = Dimensions.get('screen')
 const cardwidth = width / 2 - 30;
 
 const category = [
   {
-    name: "Staters",
+    name: "Starters",
     icon: require('../assets/kebab.png'),
-    key: 'starters'
+    key: 'starters',
+    color: '#FF6B6B'
   },
   {
     name: "Main Course",
     icon: require('../assets/biri1.png'),
-    key: 'main course'
+    key: 'main course',
+    color: '#4ECDC4'
   },
   {
     name: "Dessert",
     icon: require('../assets/ice.png'),
-    key: 'dessert'
+    key: 'dessert',
+    color: '#FF9FF3'
   },
   {
     name: "Beverages",
     icon: require('../assets/drinks.png'),
-    key: 'beverages'
+    key: 'beverages',
+    color: '#54A0FF'
   }
 ]
 
-const Cathn = () => {
+// Search Input Component
+const SearchInput = ({ word, sword, click }) => {
   const navigation = useNavigation()
   return (
-    <View>
-      <Text style={{ marginLeft: 15, fontSize: 19, fontWeight: 'bold', marginTop: 5 }}>Explore Categories</Text>
-      <FlatList
-        horizontal
-        keyExtractor={(item, index) => index.toString()}
-        data={category}
-        renderItem={(element) => {
-          return <TouchableHighlight style={[styles.cathcard, styles.shadowProp]} underlayColor="orange" activeOpacity={0.9} onPress={() => navigation.navigate('Cath', element.item?.key)} >
-            <View style={[styles.cathcard1]} >
-              {/* <Icon name={element.item.icon} size={50} color="orange" /> */}
-              <Image
-                source={element.item.icon}
-                style={{ height: 60, width: 60, resizeMode: 'contain' }}
-              />
-              <Text style={{ fontSize: 13, fontWeight: 'bold', marginTop: 2 }}>{element.item?.name}</Text>
-            </View>
+    <View style={styles.searchContainer}>
+      <View style={styles.searchBox}>
+        <Icon name='search' size={24} color="#FF6B6B" style={styles.searchIcon} />
+        <TextInput 
+          placeholder='Search delicious food...' 
+          placeholderTextColor="#999"
+          value={sword} 
+          style={styles.searchInput} 
+          onChangeText={word} 
+          onPressIn={() => navigation.navigate('Search')} 
+        />
+        {sword ? (
+          <TouchableHighlight onPress={click} underlayColor="transparent">
+            <Icon name='close' size={24} color="#FF6B6B" />
           </TouchableHighlight>
-        }}
-      />
-    </View>
-  )
-}
-const Input = ({ word, sword, click }) => {
-  // console.log('ss',sword)
-  const navigation = useNavigation()
-  return (
-    <View style={{ marginVertical: 20 }} >
-      <View style={{ backgroundColor: 'white', elevation: 4, display: 'flex', alignItems: 'center', flexDirection: 'row', paddingHorizontal: 10, paddingVertical: 10, borderRadius: 8, marginHorizontal: 15 }} >
-        <TextInput placeholder='Search' value={sword} style={{ flex: 1 }} onChangeText={word} onPressIn={() => navigation.navigate('Search')} />
-        {
-          sword ? <Icon name='close' size={25} color="orange" onPress={click} /> : <Icon name='search' size={25} color="orange" />
-        }
-
+        ) : null}
       </View>
     </View>
   )
 }
 
-
-const Popular = ({ head, data }) => {
-  const [list, setlist] = useState()
-  useEffect(() => {
-    getdata()
-  }, [])
-  const getdata = async () => {
-    try {
-      const data = await fetch('https://resturant-backend-f921.onrender.com/product/get')
-      const res = await data.json()
-      setlist(res)
-
-
-    } catch (error) {
-
-    }
-
-  }
+// Category Grid Component
+const CategoryGrid = () => {
   const navigation = useNavigation()
-
-  const fildata = list?.filter(p => p?.cath === data)
-  console.log('dd', fildata)
   return (
-    <View style={{ minHeight: 0 }}>
-      <Text style={{ marginLeft: 20, fontSize: 25, textTransform: 'capitalize', fontWeight: 'bold', marginTop: 5 }}>{data} </Text>
-
-      <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-        <FlatList
-
-          keyExtractor={(item, index) => index.toString()}
-          numColumns={2}
-          data={fildata}
-
-          renderItem={(element) => {
-            return <TouchableHighlight style={[styles.cathcardp, styles.shadowProp]} underlayColor="whitesmoke" activeOpacity={0.9} onPress={() => navigation.navigate('Detail', element.item)}  >
-              <View >
-
-                <Image
-                  source={{
-                    uri: element.item.productimg
-                  }}
-                  style={{ height: undefined, width: '100%', aspectRatio: 1, borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
-                />
-                <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginLeft: 2 }}>
-                  <Text style={{ fontSize: 16, fontWeight: 'bold', marginTop: 2 }}>{element.item?.name?.slice(0, 15)}</Text>
-                  <Text style={{ fontSize: 13, color: 'grey', marginTop: 1 }}>{element.item?.cath}</Text>
-                  <Text style={{ fontSize: 16, color: 'black', fontWeight: 'bold', marginTop: 1 }}>₹ {element.item?.price}</Text>
+    <View style={styles.categoryContainer}>
+      <Text style={styles.categoryTitle}>Explore Categories</Text>
+      <FlatList
+        keyExtractor={(item, index) => index.toString()}
+        data={category}
+        showsVerticalScrollIndicator={false}
+        numColumns={2}
+        columnWrapperStyle={{ gap: 10 }}
+        contentContainerStyle={styles.categoryGrid}
+        renderItem={(element) => {
+          return (
+            <TouchableHighlight 
+              style={[styles.categoryCard, styles.modernShadow]} 
+              underlayColor="transparent" 
+              activeOpacity={0.8} 
+              onPress={() => navigation.navigate('Cath', element.item?.key)}
+            >
+              <View style={styles.categoryCardContent}>
+                <View style={[styles.categoryIconContainer, { backgroundColor: element.item.color + '25' }]}>
+                  <Image
+                    source={element.item.icon}
+                    style={styles.categoryIcon}
+                  />
                 </View>
-
+                <Text style={styles.categoryText}>{element.item?.name}</Text>
               </View>
             </TouchableHighlight>
-          }}
-        />
-      </View>
-
-    </View>
-  )
-}
-const Cath = () => {
-  const navigation = useNavigation()
-  return (
-    <View>
-      <Text style={{ marginLeft: 18, fontSize: 24, marginTop: 5, fontFamily: 'Alegreya_700Bold' }}>Explore Categories</Text>
-      <FlatList
-        // horizontal
-        keyExtractor={(item, index) => index.toString()}
-        data={category}
-        showsHorizontalScrollIndicator={false}
-        numColumns={2}
-        contentContainerStyle={{ display: 'flex', alignItems: 'center' }}
-        renderItem={(element) => {
-          return <TouchableHighlight style={[styles.cathcard, styles.shadowProp]} underlayColor="orange" activeOpacity={0.9} onPress={() => navigation.navigate('Cath', element.item?.key)} >
-            <View style={[styles.cathcard1]} >
-              {/* <Icon name={element.item.icon} size={50} color="orange" /> */}
-              <Image
-                source={element.item.icon}
-                style={{ height: 90, width: 90, resizeMode: 'contain' }}
-              />
-              <Text style={{ fontSize: 17, fontFamily: 'Alegreya_700Bold', marginTop: 2, textAlign: 'center' }}>{element.item?.name}</Text>
-            </View>
-          </TouchableHighlight>
+          )
         }}
       />
     </View>
   )
 }
 
-const Popularnew = ({ head, data, word, sdata, pdata }) => {
-  const [list, setlist] = useState()
-  console.log('ww', word)
+// Search Results Component
+const SearchResults = ({ word, pdata, sdata }) => {
   const [fildata, setfildata] = useState()
-
-
   const navigation = useNavigation()
 
-  // const fildata = list?.filter(p => p?.cath !== data)
-  // console.log('dd', fildata)
   useEffect(() => {
-
     if (pdata && word !== "") {
-      // console.log('aaa', word)
       const newlist = pdata.filter((con) => {
         return Object.values(con).join(" ").toLowerCase().includes(word?.toLowerCase())
       })
       setfildata(newlist)
       sdata(newlist)
     }
-
   }, [word, pdata])
-  // console.log("ff",fildata)
-  return (
-    <View style={{ minHeight: 0 }}>
-      <Text style={{ marginLeft: 20, fontSize: 20, textTransform: 'capitalize', fontFamily: 'Alegreya_700Bold', marginTop: 5 }}>Search for "{word}" </Text>
 
-      <View style={{ display: 'flex', flexDirection: 'row' }}>
+  return (
+    <View style={styles.searchResultsContainer}>
+      <Text style={styles.searchResultsTitle}>Search for "{word}"</Text>
+      <View style={styles.searchResultsGrid}>
         <FlatList
-          // horizontal
           keyExtractor={(item, index) => index.toString()}
           data={fildata}
           numColumns={2}
-          contentContainerStyle={{paddingBottom:400,alignItems:'center'}}
-
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.searchResultsList}
+          columnWrapperStyle={{ justifyContent: 'space-between' }}
           renderItem={(element) => {
-            return <TouchableHighlight style={[styles.cathcardpn]} underlayColor="whitesmoke" activeOpacity={0.9} onPress={() => navigation.navigate('Detail', element?.item)}  >
-              <View >
-
-                <Image
-                  source={{
-                    uri: element?.item?.productimg
-                  }}
-                  style={{ height: undefined, width: '100%', aspectRatio: 1, borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
-                />
-                <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginLeft: 2 }}>
-                  <Text style={{ fontSize: 16, fontFamily: 'Alegreya_700Bold', marginTop: 2 }}>{element?.item?.name?.slice(0, 15)}</Text>
-                  <Text style={{ fontSize: 13, color: 'grey', fontFamily: 'Alegreya_400Regular', marginTop: 1 }}>{element?.item?.cath}</Text>
-                  <Text style={{ fontSize: 16, color: 'black', fontFamily: 'Alegreya_700Bold', marginTop: 1 }}>₹ {element?.item?.price}</Text>
+            return (
+              <TouchableHighlight 
+                style={[styles.searchProductCard, styles.modernShadow]} 
+                underlayColor="transparent" 
+                activeOpacity={0.8} 
+                onPress={() => navigation.navigate('Detail', element?.item)}
+              >
+                <View style={styles.productCard}>
+                  <Image
+                    source={{
+                      uri: element?.item?.productimg
+                    }}
+                    style={styles.productImage}
+                  />
+                  <View style={styles.productInfo}>
+                    <Text style={styles.productName}>{element?.item?.name?.slice(0, 15)}</Text>
+                    <Text style={styles.productCategory}>{element?.item?.cath}</Text>
+                    <View style={styles.priceContainer}>
+                      <Text style={styles.priceText}>₹{element?.item?.price}</Text>
+                      <View style={styles.addButton}>
+                        <Icon name="add" size={16} color="white" />
+                      </View>
+                    </View>
+                  </View>
                 </View>
-
-              </View>
-            </TouchableHighlight>
+              </TouchableHighlight>
+            )
           }}
         />
-
-
       </View>
-
     </View>
   )
 }
+
 const Search = (props) => {
-  // console.log('props', props.route?.params)
   const [word, setword] = useState()
   const [sword, setsword] = useState()
-
   const dispatch = useDispatch()
+  
   useEffect(() => {
     dispatch(getProduct())
   }, [])
+  
   const product = useSelector(state => state.product)
 
+  let [fontsLoaded] = useFonts({
+    Alegreya_400Regular,
+    Alegreya_400Regular_Italic,
+    Alegreya_500Medium,
+    Alegreya_500Medium_Italic,
+    Alegreya_700Bold,
+    Alegreya_700Bold_Italic,
+    Alegreya_800ExtraBold,
+    Alegreya_800ExtraBold_Italic,
+    Alegreya_900Black,
+    Alegreya_900Black_Italic
+  })
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    // <ScrollView>
-    <SafeAreaView>
-      <View>
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Search</Text>
+          <Text style={styles.headerSubtitle}>Find your favorite dishes</Text>
+        </View>
 
-        {/* <Cathn /> */}
-        <Input word={(d) => setword(d)} sword={word} click={(d) => setword("")} />
-        {/* <Popular data={props.route?.params} /> */}
-        {
-          word ?
+        {/* Search Input */}
+        <SearchInput 
+          word={(d) => setword(d)} 
+          sword={word} 
+          click={(d) => setword("")} 
+        />
 
-              <Popularnew word={word} pdata={product} sdata={(d) => setsword(d)} />
-     
-            : null
-        }
-        {
-          word ? null :
-            <Cath />
-        }
-      </View>
+        {/* Content */}
+        {word ? (
+          <SearchResults 
+            word={word} 
+            pdata={product} 
+            sdata={(d) => setsword(d)} 
+          />
+        ) : (
+          <CategoryGrid />
+        )}
+      </ScrollView>
     </SafeAreaView>
-    // </ScrollView>
   )
 }
 
 export default Search
 
 const styles = StyleSheet.create({
-  cathcard: {
-    padding: 10,
-    margin: 10,
-    display: 'flex',
-    flexDirection: 'column',
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  
+  // Header Styles
+  header: {
+    paddingHorizontal: 25,
+    paddingTop: 20,
+    paddingBottom: 15,
+    backgroundColor: 'white',
+    marginBottom: 15,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontFamily: 'Alegreya_800ExtraBold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_400Regular',
+    color: '#666',
+  },
+  
+  // Search Styles
+  searchContainer: {
+    marginVertical: 15,
+    paddingHorizontal: 25,
+  },
+  searchBox: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 15,
+    borderRadius: 25,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    fontFamily: 'Alegreya_400Regular',
+    color: '#333',
+  },
+  
+  // Category Styles
+  categoryContainer: {
+    paddingHorizontal: 25,
+  },
+  categoryTitle: {
+    fontSize: 24,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+    marginBottom: 20,
+  },
+  categoryGrid: {
+    paddingBottom: 20,
+  },
+  categoryCard: {
+    backgroundColor: 'white',
+    width: cardwidth,
+    height: 160,
+    borderRadius: 20,
+    // marginHorizontal: 8,
+    marginVertical: 12,
+    padding: 20,
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  categoryCardContent: {
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  categoryIcon: {
+    height: 35,
+    width: 35,
+    resizeMode: 'contain',
+  },
+  categoryText: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  
+  // Search Results Styles
+  searchResultsContainer: {
+    flex: 1,
+    paddingHorizontal: 25,
+  },
+  searchResultsTitle: {
+    fontSize: 20,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+    marginBottom: 15,
+  },
+  searchResultsGrid: {
+    flex: 1,
+  },
+  searchResultsList: {
+    paddingBottom: 20,
+  },
+  searchProductCard: {
     backgroundColor: 'white',
-    width: cardwidth,
+    width: cardwidth - 10,
+    height: 240,
+    borderRadius: 20,
+    marginHorizontal: 8,
+    marginVertical: 12,
+    overflow: 'hidden',
+  },
+  productCard: {
+    flex: 1,
+  },
+  productImage: {
     height: 140,
-    borderRadius: 8,
-    elevation: 2
-
-
+    width: '100%',
+    resizeMode: 'cover',
   },
-  cathcardp: {
-    padding: 10,
-    marginHorizontal: 10,
-    marginTop: 20,
-    marginBottom: 10,
-    display: 'flex',
-    flexDirection: 'column',
+  productInfo: {
+    padding: 15,
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  productName: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+    // marginBottom: 4,
+  },
+  productCategory: {
+    fontSize: 14,
+    color: '#999',
+    fontFamily: 'Alegreya_400Regular',
+    // marginBottom: 8,
+  },
+  priceContainer: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'white',
-    width: cardwidth,
-    height: 220,
-    borderRadius: 12,
-    elevation: 2
-
-
-
   },
-  cathcardpn: {
-    padding: 10,
-    marginHorizontal: 10,
-    marginTop: 20,
-    marginBottom: 10,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
+  priceText: {
+    fontSize: 18,
+    color: '#FF6B6B',
+    fontFamily: 'Alegreya_700Bold',
+    fontWeight: 'bold',
+  },
+  addButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FF6B6B',
     alignItems: 'center',
-    backgroundColor: 'white',
-    width: cardwidth,
-    minHeight: 220,
-    borderRadius: 12,
-    elevation: 2
-
-
-
-  }
+    justifyContent: 'center',
+  },
+  
+  // Modern Shadow
+  modernShadow: {
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.15,
+        shadowRadius: 15,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
 })

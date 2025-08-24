@@ -1,167 +1,567 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Button ,Dimensions} from 'react-native'
+import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, Dimensions, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import img from '../assets/biri.png'
 import { useDispatch, useSelector } from 'react-redux';
 import { addtocart, delCart, getcart } from '../action/user';
 import { useIsFocused, useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Icons from 'react-native-vector-icons/Entypo'
-import PrimaryButton from './PrimaryButton';
+import {
+  useFonts,
+  Alegreya_400Regular,
+  Alegreya_400Regular_Italic,
+  Alegreya_500Medium,
+  Alegreya_500Medium_Italic,
+  Alegreya_700Bold,
+  Alegreya_700Bold_Italic,
+  Alegreya_800ExtraBold,
+  Alegreya_800ExtraBold_Italic,
+  Alegreya_900Black,
+  Alegreya_900Black_Italic
+} from '@expo-google-fonts/alegreya'
 
-const { width ,height} = Dimensions.get('screen')
+const { width, height } = Dimensions.get('screen')
+
 const Cart = () => {
-
   const dispatch = useDispatch()
-
-  useEffect(() => {
-    // dispatch(getcart())
-    console.log('bb')
-  }, [isfocused])
   const cartdata = useSelector(state => state.cart.allcart)
   const del = useSelector(state => state.acart.del)
   const add = useSelector(state => state.acart.add)
   const isfocused = useIsFocused()
   const navigation = useNavigation()
+
+  let [fontsLoaded] = useFonts({
+    Alegreya_400Regular,
+    Alegreya_400Regular_Italic,
+    Alegreya_500Medium,
+    Alegreya_500Medium_Italic,
+    Alegreya_700Bold,
+    Alegreya_700Bold_Italic,
+    Alegreya_800ExtraBold,
+    Alegreya_800ExtraBold_Italic,
+    Alegreya_900Black,
+    Alegreya_900Black_Italic
+  })
+
   useFocusEffect(
     React.useCallback(() => {
-      console.log('vvbbvvv')
       dispatch(getcart())
-    }, [dispatch, cartdata?.lenth, del, add])
-
-
+    }, [dispatch, cartdata?.length, del, add])
   )
-  console.log(isfocused)
+
   const gettotal = () => {
-    return cartdata?.reduce((price, item) => (item.price * item.qyt) + price, 0)
+    return cartdata?.reduce((price, item) => (item.price * item.qyt) + price, 0) || 0
   }
 
-  const Card = ({ v, i }) => {
-    const [count, setcount] = useState(v?.qyt)
-    console.log(`${i}`, count)
-    const dispatch = useDispatch()
+  const getTax = () => {
+    return gettotal() * 0.05 // 5% tax (2.5% CGST + 2.5% SGST)
+  }
+
+  const getFinalTotal = () => {
+    return gettotal() + getTax()
+  }
+
+  const CartItem = ({ item, index }) => {
+    const [count, setcount] = useState(item?.qyt || 1)
+    
+    const updateQuantity = (newQty) => {
+      if (newQty > 0) {
+        setcount(newQty)
+        dispatch(addtocart({ 
+          cart: { 
+            cartitem: item?.cartitem, 
+            cath: item?.cath, 
+            pimg: item?.pimg, 
+            pname: item?.pname, 
+            stock: item?.stock, 
+            price: item?.price, 
+            qyt: newQty 
+          } 
+        }))
+      }
+    }
+
+    const removeItem = () => {
+      dispatch(delCart(item?.cartitem))
+    }
+
     return (
-      <View key={i} style={{ backgroundColor: 'white', height: 120, elevation: 2, shadowColor: 'grey', borderRadius: 6, marginVertical: 10, display: 'flex', flexDirection: 'row', marginHorizontal: 20 }}>
-        <View style={{ width: '35%', padding: 10 }}>
-          <Image source={
-            {
-              uri: v?.pimg
-            }
-          } style={{ width: 90, height: 90 }} />
+      <View style={styles.cartItemCard}>
+        <View style={styles.itemImageContainer}>
+          <Image 
+            source={{ uri: item?.pimg }} 
+            style={styles.itemImage}
+            resizeMode="cover"
+          />
         </View>
-        <View style={{ width: '55%', marginTop: 8 }}>
-          <Text style={{ fontSize: 20,fontFamily:'Alegreya_700Bold' }}>{v?.pname}</Text>
-          <Text style={{ fontSize: 13, color: 'grey' ,fontFamily:'Alegreya_400Regular' }}>{v?.cath}</Text>
-          <Text style={{ fontSize: 16, marginLeft: 3 ,fontFamily:'Alegreya_700Bold'}}>₹ {v?.price}</Text>
-          <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', width: '100%', }}>
-            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: 130 }}>
-              <TouchableOpacity onPress={() => {
-                if (count >= 0) {
-
-                  dispatch(addtocart({ cart: { cartitem: v?.cartitem, cath: v?.cath, pimg: v?.pimg, pname: v?.pname, stock: v?.stock, price: v?.price, qyt: count + 1 } }))
-                }
-              }} >
-                <Icons name='plus' size={20} />
-              </TouchableOpacity >
-
-              <View
-                style={{ backgroundColor: 'orange', width: 70, height: 23, borderRadius: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}
-
-              ><Text style={{ fontSize: 13, fontFamily:'Alegreya_700Bold', color: 'white' }} >{count}</Text>
-                {/* <Text style={{fontSize:18,fontWeight:'bold',color:'white'}} >Add To Cart </Text> */}
-              </View>
-              <TouchableOpacity onPress={() => {
-                if (count > 1) {
-
-                  dispatch(addtocart({ cart: { cartitem: v?.cartitem, cath: v?.cath, pimg: v?.pimg, pname: v?.pname, stock: v?.stock, price: v?.price, qyt: count - 1 } }))
-                }
-              }} >
-                <Icons name='minus' size={20} />
-              </TouchableOpacity>
+        
+        <View style={styles.itemDetails}>
+          <Text style={styles.itemName}>{item?.pname}</Text>
+          <Text style={styles.itemCategory}>{item?.cath}</Text>
+          <Text style={styles.itemPrice}>₹{item?.price}</Text>
+          
+          <View style={styles.quantityContainer}>
+            <TouchableOpacity 
+              style={[styles.quantityButton, count <= 1 && styles.quantityButtonDisabled]}
+              onPress={() => updateQuantity(count - 1)}
+              disabled={count <= 1}
+            >
+              <Icons name='minus' size={18} color={count <= 1 ? '#CCC' : '#FF6B6B'} />
+            </TouchableOpacity>
+            
+            <View style={styles.quantityDisplay}>
+              <Text style={styles.quantityText}>{count}</Text>
             </View>
+            
+            <TouchableOpacity 
+              style={styles.quantityButton}
+              onPress={() => updateQuantity(count + 1)}
+            >
+              <Icons name='plus' size={18} color='#FF6B6B' />
+            </TouchableOpacity>
           </View>
-
-
         </View>
-        <View style={{ width: '10%', marginTop: 8 }}>
-          <TouchableOpacity>
-            <Icon name='trash-sharp' size={23} onPress={() => dispatch(delCart(v?.cartitem))} />
-          </TouchableOpacity>
-
-
-        </View>
-
+        
+        <TouchableOpacity 
+          style={styles.removeButton}
+          onPress={removeItem}
+          activeOpacity={0.7}
+        >
+          <Icon name='trash-outline' size={24} color='#FF6B6B' />
+        </TouchableOpacity>
       </View>
     )
   }
-  
+
+  const EmptyCart = () => (
+    <View style={styles.emptyCartContainer}>
+      <View style={styles.emptyCartContent}>
+        <View style={styles.emptyCartIcon}>
+          <Icon name="cart-outline" size={80} color="#CCC" />
+        </View>
+        <Text style={styles.emptyCartTitle}>Your Cart is Empty</Text>
+        <Text style={styles.emptyCartSubtitle}>
+          Looks like you haven't added any delicious food to your cart yet.
+        </Text>
+        <TouchableOpacity 
+          style={styles.browseButton}
+          onPress={() => navigation.navigate('Home')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.browseButtonText}>Browse Restaurant</Text>
+          <Icon name="arrow-forward" size={20} color="white" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+
+  const CartSummary = () => (
+    <View style={styles.summaryContainer}>
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryTitle}>Order Summary</Text>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Subtotal</Text>
+          <Text style={styles.summaryValue}>₹{gettotal().toFixed(2)}</Text>
+        </View>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>CGST (2.5%)</Text>
+          <Text style={styles.summaryValue}>₹{(gettotal() * 0.025).toFixed(2)}</Text>
+        </View>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>SGST (2.5%)</Text>
+          <Text style={styles.summaryValue}>₹{(gettotal() * 0.025).toFixed(2)}</Text>
+        </View>
+        
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Delivery</Text>
+          <Text style={styles.summaryValue}>₹0.00</Text>
+        </View>
+        
+        <View style={styles.divider} />
+        
+        <View style={styles.totalRow}>
+          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalValue}>₹{getFinalTotal().toFixed(2)}</Text>
+        </View>
+      </View>
+    </View>
+  )
+
+  const CheckoutButton = () => (
+    <View style={styles.checkoutContainer}>
+      <TouchableOpacity 
+        style={styles.checkoutButton}
+        onPress={() => navigation.navigate('Razo')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.checkoutButtonText}>Proceed to Payment</Text>
+        <Icon name="card-outline" size={20} color="white" />
+      </TouchableOpacity>
+    </View>
+  )
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <SafeAreaView>
-      <ScrollView>
-        {
-          cartdata?.length > 0 ? <View style={{ paddingTop: 15, minHeight: height,marginBottom:100 }}>
-            <View >
-              <View style={{ marginLeft: 10 }}>
-                <Text style={{ fontSize: 25,fontFamily:'Alegreya_700Bold' }}>Your Food Cart</Text>
-              </View>
-              <View>
-                {
-                  cartdata?.map((v, i) => {
-                    return <Card v={v} key={i} />
-                  })
-                }
+    <SafeAreaView style={styles.container}>
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Your Cart</Text>
+          <Text style={styles.headerSubtitle}>
+            {cartdata?.length || 0} {cartdata?.length === 1 ? 'item' : 'items'} in your cart
+          </Text>
+        </View>
 
-
-
-              </View>
+        {cartdata?.length > 0 ? (
+          <>
+            {/* Cart Items */}
+            <View style={styles.cartItemsContainer}>
+              {cartdata?.map((item, index) => (
+                <CartItem key={index} item={item} index={index} />
+              ))}
             </View>
-            <View >
-              <View style={{ padding: 20, marginTop: 15 }} >
-                <View style={{ width: '100%', height: 190, backgroundColor: 'white', elevation: 2, shadowColor: 'grey', borderRadius: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                  <View style={{ width: '100%', display: 'flex', flexDirection: 'row', borderBottomColor: 'grey', borderColor: 'grey', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 5 }}>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>Subtotal</Text>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>₹ {gettotal()}</Text>
-                  </View>
-                  <View style={{ width: '100%', display: 'flex', flexDirection: 'row', borderBottomColor: 'grey', borderColor: 'grey', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 5 }}>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>CGST</Text>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>₹ {gettotal()*0.025}</Text>
-                  </View>
-                  <View style={{ width: '100%', display: 'flex', flexDirection: 'row', borderBottomColor: 'grey', borderColor: 'grey', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 5 }}>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>SGST</Text>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>₹ {gettotal()*0.025}</Text>
-                  </View>
-                  <View style={{ width: '100%', display: 'flex', flexDirection: 'row', borderBottomColor: 'grey', borderColor: 'grey', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 5 }}>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>Delivery</Text>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_400Regular' }}>₹ 0</Text>
-                  </View>
-                  <View style={{ width: '100%', display: 'flex', flexDirection: 'row', borderBottomColor: 'grey', borderColor: 'grey', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 5 }}>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_700Bold' }}>Total</Text>
-                    <Text style={{ fontSize: 18,fontFamily:'Alegreya_700Bold' }}>₹ {gettotal()+ gettotal()*0.05}</Text>
-                  </View>
 
-                </View>
+            {/* Order Summary */}
+            <CartSummary />
 
-              </View>
-            </View>
-            <PrimaryButton title="Proceed to Payment" onpress={()=>navigation.navigate('Razo')} />
-
-          </View> :
-            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-              <Image source={require('../assets/cook.png')} style={{ width: 250, height: 250, marginVertical: 15 }} />
-              <Text style={{ fontSize: 18, fontFamily:'Alegreya_700Bold', width: '70%', textAlign: 'center' }}>Good Food Always Cooking</Text>
-              <Text style={{ fontSize: 16, fontWeight: '200',fontFamily:'Alegreya_400Regular', width: '80%', textAlign: 'center' }}>Your Cart is empty. Add somethings to the cart.</Text>
-              <Text style={{ fontSize: 14, fontFamily:'Alegreya_700Bold', width: '50%', textAlign: 'center', color: 'orange', padding: 5, borderColor: 'orange', marginTop: 10, borderWidth: 1 }} onPress={() => navigation.navigate('Home')}>BROWSE RESTAURANT</Text>
-
-            </View>
-        }
-
-
+            {/* Checkout Button */}
+            <CheckoutButton />
+          </>
+        ) : (
+          <EmptyCart />
+        )}
       </ScrollView>
     </SafeAreaView>
-
   )
 }
 
 export default Cart
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 50,
+  },
+  
+  // Header Styles
+  header: {
+    paddingHorizontal: 25,
+    paddingTop: 20,
+    paddingBottom: 15,
+    backgroundColor: 'white',
+    marginBottom: 15,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontFamily: 'Alegreya_800ExtraBold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  headerSubtitle: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_400Regular',
+    color: '#666',
+  },
+  
+  // Cart Items Styles
+  cartItemsContainer: {
+    paddingHorizontal: 25,
+    marginBottom: 20,
+    paddingBottom: 10,
+  },
+  cartItemCard: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 15,
+    marginVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 110,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  itemImageContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 15,
+    overflow: 'hidden',
+    marginRight: 15,
+    flexShrink: 0,
+  },
+  itemImage: {
+    width: '100%',
+    height: '100%',
+  },
+  itemDetails: {
+    flex: 1,
+    justifyContent: 'space-between',
+    height: 80,
+    marginRight: 10,
+  },
+  itemName: {
+    fontSize: 18,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  itemCategory: {
+    fontSize: 14,
+    fontFamily: 'Alegreya_400Regular',
+    color: '#999',
+    marginBottom: 4,
+  },
+  itemPrice: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#FF6B6B',
+    marginBottom: 8,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 20,
+    padding: 4,
+    alignSelf: 'flex-start',
+    marginTop: 5,
+  },
+  quantityButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  quantityButtonDisabled: {
+    backgroundColor: '#F0F0F0',
+  },
+  quantityDisplay: {
+    width: 40,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 8,
+  },
+  quantityText: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+  },
+  removeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF5F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+    alignSelf: 'flex-start',
+    marginTop: 5,
+  },
+  
+  // Empty Cart Styles
+  emptyCartContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    minHeight: height * 0.6,
+  },
+  emptyCartContent: {
+    alignItems: 'center',
+  },
+  emptyCartIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#F8F9FA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
+  },
+  emptyCartTitle: {
+    fontSize: 24,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  emptyCartSubtitle: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_400Regular',
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 30,
+  },
+  browseButton: {
+    backgroundColor: '#FF6B6B',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 25,
+    paddingVertical: 15,
+    borderRadius: 25,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FF6B6B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
+  },
+  browseButtonText: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_700Bold',
+    color: 'white',
+    marginRight: 8,
+  },
+  
+  // Summary Styles
+  summaryContainer: {
+    paddingHorizontal: 25,
+    marginBottom: 20,
+  },
+  summaryCard: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.15,
+        shadowRadius: 15,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  summaryTitle: {
+    fontSize: 20,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+    marginBottom: 20,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  summaryLabel: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_400Regular',
+    color: '#666',
+  },
+  summaryValue: {
+    fontSize: 16,
+    fontFamily: 'Alegreya_500Medium',
+    color: '#333',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E9ECEF',
+    marginVertical: 15,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontFamily: 'Alegreya_700Bold',
+    color: '#333',
+  },
+  totalValue: {
+    fontSize: 20,
+    fontFamily: 'Alegreya_800ExtraBold',
+    color: '#FF6B6B',
+  },
+  
+  // Checkout Button Styles
+  checkoutContainer: {
+    paddingHorizontal: 25,
+    paddingBottom: 20,
+  },
+  checkoutButton: {
+    backgroundColor: '#FF6B6B',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    borderRadius: 25,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#FF6B6B',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  checkoutButtonText: {
+    fontSize: 18,
+    fontFamily: 'Alegreya_700Bold',
+    color: 'white',
+    marginRight: 8,
+  },
+})
