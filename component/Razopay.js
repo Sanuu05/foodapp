@@ -71,7 +71,7 @@ const Razopay = () => {
       return;
 
     } else {
-      const response = await fetch("https://cautious-dog-swimsuit.cyclic.app/normal/sorder", {
+      const response = await fetch("https://resturant-backend-f921.onrender.com/normal/sorder", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +95,7 @@ const Razopay = () => {
           //  alert('succed')
            const token = await AsyncStorage.getItem('normaltoken');
            console.log('cvcv',token)
-          const response = await Axios.post("https://cautious-dog-swimsuit.cyclic.app/normal/successnew", {cart:cartdata,user:userdata,total:gettotal()},{ headers: { "x-auth-token": token } })
+          const response = await Axios.post("https://resturant-backend-f921.onrender.com/normal/successnew", {cart:cartdata,user:userdata,total:gettotal()},{ headers: { "x-auth-token": token } })
           // console.log(response)
           if(response){
             dispatch(deleted())

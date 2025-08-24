@@ -2,7 +2,7 @@
 import { NORMAL_LOADED, NORMAL_LOADING, NAUTH_ERROR, NLOGIN_SUCCESS, NLOGIN_FAIL, NLOGOUT_SUCESS, NREGISTER_SUCCESS, NREGISTER_FAIL,  GET_ERROR } from './types'
 import Axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const port = "https://cautious-dog-swimsuit.cyclic.app"
+const port = "https://resturant-backend-f921.onrender.com"
 // const port = "http://10.0.2.2:7777"
 
 export const loadNormalUser = () => async (dispatch, getState) => {

@@ -31,7 +31,7 @@ import {
   Alegreya_900Black,
   Alegreya_900Black_Italic
 } from '@expo-google-fonts/alegreya'
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';
 import Track from './component/Track';
 
 
@@ -55,7 +55,7 @@ export default function App() {
 
   })
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   } else {
 
 

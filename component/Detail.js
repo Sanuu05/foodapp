@@ -18,7 +18,7 @@ import {
   Alegreya_900Black,
   Alegreya_900Black_Italic
 } from '@expo-google-fonts/alegreya'
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 const { width, height } = Dimensions.get('screen')
@@ -56,7 +56,7 @@ const Detail = (props) => {
   }
   console.log('vvbbvvv', cartdata?.length)
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   } else {
 
     return (

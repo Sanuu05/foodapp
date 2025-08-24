@@ -20,7 +20,7 @@ import {
   Alegreya_900Black,
   Alegreya_900Black_Italic
 } from '@expo-google-fonts/alegreya'
-import AppLoading from 'expo-app-loading';
+import * as SplashScreen from 'expo-splash-screen';
 const { width, height } = Dimensions.get('screen')
 const cardwidth = width / 2 - 30;
 
@@ -256,7 +256,7 @@ const Homescreen = () => {
 
   })
   if (!fontsLoaded) {
-    return <AppLoading />;
+    return null;
   } else {
 
   return (
@@ -270,7 +270,7 @@ const Homescreen = () => {
 
 
             {
-              word === "" || sword === undefined || sword === [] ?
+              word === "" || sword === undefined || sword.length === 0 ?
                 <ScrollView>
                   <View style={{backgroundColor:'FEFEFE'}}>
                     <Heading user={user} />

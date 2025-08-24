@@ -80,7 +80,7 @@ const Popular = ({ head, data }) => {
   }, [])
   const getdata = async () => {
     try {
-      const data = await fetch('https://cautious-dog-swimsuit.cyclic.app/product/get')
+      const data = await fetch('https://resturant-backend-f921.onrender.com/product/get')
       const res = await data.json()
       setlist(res)
 
