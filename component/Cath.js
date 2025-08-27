@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, TouchableHighlight, Image, TextInput, ScrollView,ActivityIndicator ,Dimensions} from 'react-native'
+import { StyleSheet, Text, View, FlatList, TouchableHighlight, Image, TextInput, ScrollView,ActivityIndicator ,Dimensions, TouchableOpacity, Platform} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'
@@ -45,23 +45,27 @@ const category = [
 const Cathn = ({data}) => {
     const navigation = useNavigation()
     return (
-        <View>
-            <Text style={{ marginLeft: 15, fontSize: 19, fontWeight: 'bold', marginTop: 5 }}>Explore Categories</Text>
+        <View style={styles.categoryContainer}>
+            <Text style={styles.categoryTitle}>Explore Categories</Text>
             <FlatList
                 horizontal
                 keyExtractor={(item, index) => index.toString()}
                 data={category}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryList}
+                ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
                 renderItem={(element) => {
-                    return <TouchableHighlight style={[styles.cathcard, styles.shadowProp, data===element.item?.name?styles.activec:null]} underlayColor="orange" activeOpacity={0.9} onPress={() => navigation.navigate('Cath', element.item?.key)} >
-                        <View style={[styles.cathcard1]} >
-                            {/* <Icon name={element.item.icon} size={50} color="orange" /> */}
-                            <Image
-                                source={element.item.icon}
-                                style={{ height: 60, width: 60, resizeMode: 'contain' }}
-                            />
-                            <Text style={{ fontSize: 13, fontFamily:'Alegreya_700Bold',textAlign:'center', marginTop: 2 }}>{element.item?.name}</Text>
+                    return <TouchableOpacity style={[styles.cathcard, styles.modernShadow, data===element.item?.name?styles.activec:null]} activeOpacity={1} onPress={() => navigation.navigate('Cath', element.item?.key)} >
+                        <View style={styles.cathcard1}>
+                            <View style={[styles.iconContainer, { backgroundColor: '#FF6B6B' + '25' }]}>
+                                <Image
+                                    source={element.item.icon}
+                                    style={styles.categoryIcon}
+                                />
+                            </View>
+                            <Text style={styles.categoryText}>{element.item?.name}</Text>
                         </View>
-                    </TouchableHighlight>
+                    </TouchableOpacity>
                 }}
             />
         </View>
@@ -107,9 +111,9 @@ const Popular = ({ head, data }) => {
             {
                 fildata?.length>0?
                 <View style={{ minHeight: 0 }}>
-                <Text style={{ marginLeft: 20, fontSize: 25,textTransform:'capitalize', fontWeight: 'bold', marginTop: 0 }}>{data} </Text>
+                <Text style={styles.popularTitle}>{data}</Text>
               
-                <View style={{display:'flex',height:height,flexDirection:'column',alignItems:'center',marginVertical:0,paddingBottom:10} }>
+                <View style={styles.popularGrid}>
     
                 <FlatList
                     showsHorizontalScrollIndicator={false}
@@ -118,26 +122,30 @@ const Popular = ({ head, data }) => {
                     numColumns={2}
                     data={fildata}
                     scrollEnabled
-                    contentContainerStyle={{paddingBottom:400,alignItems:'center'}}
+                    contentContainerStyle={styles.popularList}
+                    columnWrapperStyle={{ justifyContent: 'space-between' }}
                   
                     renderItem={(element) => {
-                        return <TouchableHighlight style={[styles.cathcardp]} underlayColor="whitesmoke" activeOpacity={0.9} onPress={() => navigation.navigate('Detail', element.item)}  >
-                            <View >
-    
+                        return <TouchableOpacity style={[styles.cathcardp, styles.modernShadow]} activeOpacity={1} onPress={() => navigation.navigate('Detail', element.item)}>
+                            <View style={styles.productCard}>
                                 <Image
                                     source={{
                                         uri: element.item.productimg
                                     }}
-                                    style={{ height: undefined, width: '100%', aspectRatio: 1, borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
+                                    style={styles.productImage}
                                 />
-                                <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', marginLeft: 2 }}>
-                                    <Text style={{ fontSize: 16, fontFamily:'Alegreya_700Bold', marginTop: 2 }}>{element.item?.name?.slice(0, 15)}</Text>
-                                    <Text style={{ fontSize: 13, color: 'grey',fontFamily:'Alegreya_400Regular', marginTop: 1 }}>{element.item?.cath}</Text>
-                                    <Text style={{ fontSize: 16, color: 'black', fontFamily:'Alegreya_700Bold', marginTop: 1 }}>₹ {element.item?.price}</Text>
+                                <View style={styles.productInfo}>
+                                    <Text style={styles.productName}>{element.item?.name?.slice(0, 15)}</Text>
+                                    <Text style={styles.productCategory}>{element.item?.cath}</Text>
+                                    <View style={styles.priceContainer}>
+                                        <Text style={styles.priceText}>₹ {element.item?.price}</Text>
+                                        <View style={styles.addButton}>
+                                            <Icon name="add" size={16} color="white" />
+                                        </View>
+                                    </View>
                                 </View>
-    
                             </View>
-                        </TouchableHighlight>
+                        </TouchableOpacity>
                     }}
                 />
                 {/* {
@@ -164,8 +172,9 @@ const Popular = ({ head, data }) => {
                 </View>
     
             </View>:
-            <View style={{height:400, display:'flex',justifyContent:'center',alignItems:'center'}}>
-                <ActivityIndicator size="large" color="orange" />
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#FF6B6B" />
+                <Text style={styles.loadingText}>Loading delicious food...</Text>
                 </View>
             }
           
@@ -195,7 +204,7 @@ const Cath = (props) => {
     
     return (
         // <ScrollView>
-        <SafeAreaView style={{flex:1,paddingVertical:0}}>
+        <SafeAreaView style={styles.container}>
             <View >
                 <Cathn  data={props.route?.params}/>
                 {/* <Input /> */}
@@ -210,40 +219,158 @@ const Cath = (props) => {
 export default Cath
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#F8F9FA',
+        paddingVertical: 0,
+    },
+    categoryContainer: {
+        marginBottom: 35,
+        paddingTop: 10,
+    },
+    categoryTitle: {
+        marginLeft: 20,
+        fontSize: 24,
+        fontFamily: 'Alegreya_700Bold',
+        color: '#333',
+        marginBottom: 20,
+    },
+    categoryList: {
+        paddingVertical: 15,
+    },
     cathcard: {
-        padding: 10,
-        margin: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
+        padding: 15,
+        marginHorizontal: 12,
         backgroundColor: 'white',
         width: 100,
         height: 100,
-        borderRadius: 8,
-        elevation:1
-
-
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cathcard1: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    iconContainer: {
+        width: 45,
+        height: 45,
+        borderRadius: 22.5,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    categoryIcon: {
+        height: 28,
+        width: 28,
+        resizeMode: 'contain',
+    },
+    categoryText: {
+        fontSize: 13,
+        fontFamily: 'Alegreya_700Bold',
+        color: '#333',
+        textAlign: 'center',
+    },
+    popularTitle: {
+        marginLeft: 20,
+        fontSize: 24,
+        fontFamily: 'Alegreya_700Bold',
+        color: '#333',
+        marginBottom: 20,
+        textTransform: 'capitalize',
+    },
+    popularGrid: {
+        display: 'flex',
+        height: height,
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginVertical: 0,
+        paddingBottom: 10,
+    },
+    popularList: {
+        paddingBottom: 400,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
     },
     cathcardp: {
-        padding: 10,
-        marginHorizontal: 10,
-        marginTop:20,
-        marginBottom:10,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        padding: 0,
+        marginHorizontal: 8,
+        marginVertical: 12,
         backgroundColor: 'white',
         width: cardwidth,
-        minHeight : 220,
-        borderRadius: 12,
-        elevation:1
-
-
-
+        height: 220,
+        borderRadius: 20,
+        overflow: 'hidden',
     },
-    activec:{
-        backgroundColor:'orange'
+    productCard: {
+        flex: 1,
+    },
+    productImage: {
+        height: 120,
+        width: '100%',
+        resizeMode: 'cover',
+    },
+    productInfo: {
+        padding: 12,
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    productName: {
+        fontSize: 14,
+        fontFamily: 'Alegreya_700Bold',
+        color: '#333',
+    },
+    productCategory: {
+        fontSize: 12,
+        color: '#999',
+        fontFamily: 'Alegreya_400Regular',
+    },
+    priceContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    priceText: {
+        fontSize: 16,
+        color: '#FF6B6B',
+        fontFamily: 'Alegreya_700Bold',
+        fontWeight: 'bold',
+    },
+    addButton: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        backgroundColor: '#FF6B6B',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    loadingContainer: {
+        height: 400,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
+    },
+    loadingText: {
+        marginTop: 15,
+        fontSize: 16,
+        color: '#666',
+        fontFamily: 'Alegreya_400Regular',
+    },
+    activec: {
+        backgroundColor: '#FF6B6B'
+    },
+    modernShadow: {
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.15,
+                shadowRadius: 15,
+            },
+            android: {
+                elevation: 12,
+            },
+        }),
     }
 })

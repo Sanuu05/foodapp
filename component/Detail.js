@@ -5,6 +5,8 @@ import Icon from 'react-native-vector-icons/Entypo'
 import { addtocart, getcart, loadNormalUser } from '../action/user';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon1 from 'react-native-vector-icons/MaterialIcons'
+import LoadingSpinner from './LoadingSpinner'
+import Toast from 'react-native-toast-message'
 import {
   useFonts,
   Alegreya_400Regular,
@@ -27,6 +29,7 @@ const Detail = (props) => {
   const dispatch = useDispatch()
   const [count, setcount] = useState(1)
   const [count1, setcount1] = useState(1)
+  const [addingToCart, setAddingToCart] = useState(false)
   let [fontsLoaded] = useFonts({
     Alegreya_400Regular,
     Alegreya_400Regular_Italic,
@@ -127,25 +130,46 @@ const Detail = (props) => {
             {/* Add to Cart Button */}
             <TouchableOpacity
               style={styles.addToCartButton}
-              onPress={() => {
+              onPress={async () => {
                 if(user){
+                  setAddingToCart(true)
                   setcount1(count + 1)
-                  dispatch(addtocart({ 
-                    cart: { 
-                      cartitem: props?.route?.params?._id, 
-                      pimg: props?.route?.params?.productimg, 
-                      pname: props?.route?.params?.name, 
-                      stock: props?.route?.params?.stock, 
-                      cath: props?.route?.params?.cath, 
-                      price: props?.route?.params?.price, 
-                      qyt: count 
-                    } 
-                  }))
+                  try {
+                    await dispatch(addtocart({ 
+                      cart: { 
+                        cartitem: props?.route?.params?._id, 
+                        pimg: props?.route?.params?.productimg, 
+                        pname: props?.route?.params?.name, 
+                        stock: props?.route?.params?.stock, 
+                        cath: props?.route?.params?.cath, 
+                        price: props?.route?.params?.price, 
+                        qyt: count 
+                      } 
+                    }))
+                    Toast.show({
+                      type: 'success',
+                      text1: 'Added to Cart',
+                      text2: `${count} ${props?.route?.params?.name} added successfully`,
+                      position: 'top',
+                      visibilityTime: 2000,
+                    })
+                  } catch (error) {
+                    Toast.show({
+                      type: 'error',
+                      text1: 'Failed to Add',
+                      text2: 'Could not add item to cart',
+                      position: 'top',
+                      visibilityTime: 3000,
+                    })
+                  } finally {
+                    setAddingToCart(false)
+                  }
                 } else {
                   navigation.navigate('Login')
                 }
               }}
               activeOpacity={0.8}
+              disabled={addingToCart}
             >
               <Icon1 name="shopping-cart" size={20} color="white" style={styles.cartIcon} />
               <Text style={styles.addToCartText}>Add to Cart ({count})</Text>
@@ -178,6 +202,15 @@ const Detail = (props) => {
               </View>
             </TouchableOpacity>
           </View>
+        )}
+        
+        {/* Loading Overlay for Add to Cart */}
+        {addingToCart && (
+          <LoadingSpinner 
+            fullScreen={true}
+            text="Adding to cart..."
+            backgroundColor="rgba(248, 249, 250, 0.8)"
+          />
         )}
       </SafeAreaView>
     )

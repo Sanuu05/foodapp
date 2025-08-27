@@ -5,6 +5,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import { useDispatch, useSelector } from 'react-redux';
 import { getProduct } from '../action/product';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import LoadingSpinner from './LoadingSpinner'
+import Toast from 'react-native-toast-message'
 import {
   useFonts,
   Alegreya_400Regular,
@@ -20,7 +22,7 @@ import {
 } from '@expo-google-fonts/alegreya'
 
 const { width, height } = Dimensions.get('screen')
-const cardwidth = width / 2 - 30;
+const cardwidth = width / 2 - 20;
 
 const category = [
   {
@@ -176,10 +178,34 @@ const SearchResults = ({ word, pdata, sdata }) => {
 const Search = (props) => {
   const [word, setword] = useState()
   const [sword, setsword] = useState()
+  const [loading, setLoading] = useState(true)
   const dispatch = useDispatch()
   
   useEffect(() => {
-    dispatch(getProduct())
+    const fetchProducts = async () => {
+      setLoading(true)
+      try {
+        await dispatch(getProduct())
+        Toast.show({
+          type: 'success',
+          text1: 'Products Loaded',
+          text2: 'Menu items loaded successfully',
+          position: 'top',
+          visibilityTime: 1500,
+        })
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Loading Failed',
+          text2: 'Could not load menu items',
+          position: 'top',
+          visibilityTime: 3000,
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProducts()
   }, [])
   
   const product = useSelector(state => state.product)
@@ -203,35 +229,43 @@ const Search = (props) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Search</Text>
-          <Text style={styles.headerSubtitle}>Find your favorite dishes</Text>
-        </View>
-
-        {/* Search Input */}
-        <SearchInput 
-          word={(d) => setword(d)} 
-          sword={word} 
-          click={(d) => setword("")} 
+      {loading ? (
+        <LoadingSpinner 
+          fullScreen={true}
+          text="Loading products..."
+          backgroundColor="#F8F9FA"
         />
+      ) : (
+        <ScrollView 
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Search</Text>
+            <Text style={styles.headerSubtitle}>Find your favorite dishes</Text>
+          </View>
 
-        {/* Content */}
-        {word ? (
-          <SearchResults 
-            word={word} 
-            pdata={product} 
-            sdata={(d) => setsword(d)} 
+          {/* Search Input */}
+          <SearchInput 
+            word={(d) => setword(d)} 
+            sword={word} 
+            click={(d) => setword("")} 
           />
-        ) : (
-          <CategoryGrid />
-        )}
-      </ScrollView>
+
+          {/* Content */}
+          {word ? (
+            <SearchResults 
+              word={word} 
+              pdata={product} 
+              sdata={(d) => setsword(d)} 
+            />
+          ) : (
+            <CategoryGrid />
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   )
 }
@@ -319,16 +353,19 @@ const styles = StyleSheet.create({
   
   // Category Styles
   categoryContainer: {
-    paddingHorizontal: 25,
+    // paddingHorizontal: 25,
   },
   categoryTitle: {
     fontSize: 24,
     fontFamily: 'Alegreya_700Bold',
     color: '#333',
     marginBottom: 20,
+    paddingHorizontal: 10,
   },
   categoryGrid: {
     paddingBottom: 20,
+    paddingHorizontal: 10,
+    // backgroundColor:"red"
   },
   categoryCard: {
     backgroundColor: 'white',
@@ -368,26 +405,28 @@ const styles = StyleSheet.create({
   // Search Results Styles
   searchResultsContainer: {
     flex: 1,
-    paddingHorizontal: 25,
+    // paddingHorizontal: 10,
   },
   searchResultsTitle: {
     fontSize: 20,
     fontFamily: 'Alegreya_700Bold',
     color: '#333',
     marginBottom: 15,
+    paddingHorizontal: 10,
   },
   searchResultsGrid: {
     flex: 1,
   },
   searchResultsList: {
     paddingBottom: 20,
+    paddingHorizontal: 10,
   },
   searchProductCard: {
     backgroundColor: 'white',
-    width: cardwidth - 10,
+    width: cardwidth ,
     height: 240,
     borderRadius: 20,
-    marginHorizontal: 8,
+    // marginHorizontal: 8,
     marginVertical: 12,
     overflow: 'hidden',
   },

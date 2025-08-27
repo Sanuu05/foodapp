@@ -6,6 +6,8 @@ import { addtocart, delCart, getcart } from '../action/user';
 import { useIsFocused, useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Icons from 'react-native-vector-icons/Entypo'
+import LoadingSpinner from './LoadingSpinner'
+import Toast from 'react-native-toast-message'
 import {
   useFonts,
   Alegreya_400Regular,
@@ -29,6 +31,8 @@ const Cart = () => {
   const add = useSelector(state => state.acart.add)
   const isfocused = useIsFocused()
   const navigation = useNavigation()
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
 
   let [fontsLoaded] = useFonts({
     Alegreya_400Regular,
@@ -45,8 +49,16 @@ const Cart = () => {
 
   useFocusEffect(
     React.useCallback(() => {
-      dispatch(getcart())
-    }, [dispatch, cartdata?.length, del, add])
+      const fetchCart = async () => {
+        setLoading(true)
+        try {
+          await dispatch(getcart())
+        } finally {
+          setLoading(false)
+        }
+      }
+      fetchCart()
+    }, [dispatch, del, add])
   )
 
   const gettotal = () => {
@@ -64,25 +76,65 @@ const Cart = () => {
   const CartItem = ({ item, index }) => {
     const [count, setcount] = useState(item?.qyt || 1)
     
-    const updateQuantity = (newQty) => {
+    const updateQuantity = async (newQty) => {
       if (newQty > 0) {
+        setUpdating(true)
         setcount(newQty)
-        dispatch(addtocart({ 
-          cart: { 
-            cartitem: item?.cartitem, 
-            cath: item?.cath, 
-            pimg: item?.pimg, 
-            pname: item?.pname, 
-            stock: item?.stock, 
-            price: item?.price, 
-            qyt: newQty 
-          } 
-        }))
+        try {
+          await dispatch(addtocart({ 
+            cart: { 
+              cartitem: item?.cartitem, 
+              cath: item?.cath, 
+              pimg: item?.pimg, 
+              pname: item?.pname, 
+              stock: item?.stock, 
+              price: item?.price, 
+              qyt: newQty 
+            } 
+          }))
+          Toast.show({
+            type: 'success',
+            text1: 'Quantity Updated',
+            text2: `${item?.pname} quantity changed to ${newQty}`,
+            position: 'top',
+            visibilityTime: 1500,
+          })
+        } catch (error) {
+          Toast.show({
+            type: 'error',
+            text1: 'Update Failed',
+            text2: 'Could not update quantity',
+            position: 'top',
+            visibilityTime: 2500,
+          })
+        } finally {
+          setUpdating(false)
+        }
       }
     }
 
-    const removeItem = () => {
-      dispatch(delCart(item?.cartitem))
+    const removeItem = async () => {
+      setUpdating(true)
+      try {
+        await dispatch(delCart(item?.cartitem))
+        Toast.show({
+          type: 'success',
+          text1: 'Item Removed',
+          text2: `${item?.pname} removed from cart`,
+          position: 'top',
+          visibilityTime: 2000,
+        })
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Remove Failed',
+          text2: 'Could not remove item from cart',
+          position: 'top',
+          visibilityTime: 2500,
+        })
+      } finally {
+        setUpdating(false)
+      }
     }
 
     return (
@@ -209,11 +261,18 @@ const Cart = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      {loading ? (
+        <LoadingSpinner 
+          fullScreen={true}
+          text="Loading your cart..."
+          backgroundColor="#F8F9FA"
+        />
+      ) : (
+        <ScrollView 
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Your Cart</Text>
@@ -240,7 +299,15 @@ const Cart = () => {
         ) : (
           <EmptyCart />
         )}
-      </ScrollView>
+        </ScrollView>
+      )}
+      {updating && (
+        <LoadingSpinner 
+          fullScreen={true}
+          text="Updating cart..."
+          backgroundColor="rgba(248, 249, 250, 0.8)"
+        />
+      )}
     </SafeAreaView>
   )
 }

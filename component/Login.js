@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, Platform, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions, Platform, ScrollView, ActivityIndicator } from 'react-native'
+import Toast from 'react-native-toast-message'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import PrimaryButton from './PrimaryButton'
@@ -27,6 +28,7 @@ const Login = () => {
     const [login, setlogin] = useState(true)
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const [loading, setLoading] = useState(false)
     const dispatch = useDispatch()
     const [token, settoken] = useState()
     const [data, setdata] = useState({
@@ -47,50 +49,140 @@ const Login = () => {
       Alegreya_900Black_Italic
     })
 
-    const submit = () => {
+    const submit = async () => {
         if (!data.email) {
-            alert('Please enter your email address')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Please enter your email address',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
         if (!data.password) {
-            alert('Please enter your password')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Please enter your password',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
-        dispatch(Nloguser({ email: data.email, password: data.password }))
+        
+        setLoading(true)
+        try {
+            await dispatch(Nloguser({ email: data.email, password: data.password }))
+            Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: 'Login successful!',
+                position: 'top',
+                visibilityTime: 2000,
+            })
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Login Failed',
+                text2: 'Invalid email or password. Please try again.',
+                position: 'top',
+                visibilityTime: 4000,
+            })
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const sign = () => {
+    const sign = async () => {
         if (!data.name) {
-            alert('Please enter your name')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Please enter your name',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
         if (!data.email) {
-            alert('Please enter your email address')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Please enter your email address',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
         if (!data.password) {
-            alert('Please enter your password')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Please enter your password',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
         if (!data.cpassword) {
-            alert('Please confirm your password')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Please confirm your password',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
         if (data.password !== data.cpassword) {
-            alert('Passwords do not match')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Passwords do not match',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
         if (!data.mobile) {
-            alert('Please enter your mobile number')
+            Toast.show({
+                type: 'error',
+                text1: 'Validation Error',
+                text2: 'Please enter your mobile number',
+                position: 'top',
+                visibilityTime: 3000,
+            })
             return
         }
-        dispatch(userNormalSign({ 
-            email: data.email, 
-            password: data.password,
-            cpassword: data.cpassword,
-            mobile: data.mobile,
-            name: data.name 
-        }))
+        
+        setLoading(true)
+        try {
+            await dispatch(userNormalSign({ 
+                email: data.email, 
+                password: data.password,
+                cpassword: data.cpassword,
+                mobile: data.mobile,
+                name: data.name 
+            }))
+            Toast.show({
+                type: 'success',
+                text1: 'Success',
+                text2: 'Account created successfully!',
+                position: 'top',
+                visibilityTime: 2000,
+            })
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Registration Failed',
+                text2: 'Unable to create account. Please try again.',
+                position: 'top',
+                visibilityTime: 4000,
+            })
+        } finally {
+            setLoading(false)
+        }
     }
 
     const navigation = useNavigation()
@@ -197,9 +289,22 @@ const Login = () => {
                                 </View>
                             </View>
 
-                            <TouchableOpacity style={styles.loginButton} onPress={submit}>
-                                <Text style={styles.loginButtonText}>Sign In</Text>
-                                <Icon name="arrow-forward" size={20} color="white" />
+                            <TouchableOpacity 
+                                style={[styles.loginButton, loading && styles.disabledButton]} 
+                                onPress={submit}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <ActivityIndicator size="small" color="white" style={styles.loader} />
+                                        <Text style={styles.loginButtonText}>Signing In...</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Text style={styles.loginButtonText}>Sign In</Text>
+                                        <Icon name="arrow-forward" size={20} color="white" />
+                                    </>
+                                )}
                             </TouchableOpacity>
                         </View>
                     ) : (
@@ -307,9 +412,22 @@ const Login = () => {
                                 </View>
                             </View>
 
-                            <TouchableOpacity style={styles.signupButton} onPress={sign}>
-                                <Text style={styles.signupButtonText}>Create Account</Text>
-                                <Icon name="person-add" size={20} color="white" />
+                            <TouchableOpacity 
+                                style={[styles.signupButton, loading && styles.disabledButton]} 
+                                onPress={sign}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <>
+                                        <ActivityIndicator size="small" color="white" style={styles.loader} />
+                                        <Text style={styles.signupButtonText}>Creating Account...</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Text style={styles.signupButtonText}>Create Account</Text>
+                                        <Icon name="person-add" size={20} color="white" />
+                                    </>
+                                )}
                             </TouchableOpacity>
                         </View>
                     )}
@@ -328,6 +446,7 @@ const Login = () => {
                     </View>
                 </View>
             </ScrollView>
+            <Toast />
         </SafeAreaView>
     )
 }
@@ -538,5 +657,13 @@ const styles = StyleSheet.create({
     toggleLink: {
         fontFamily: 'Alegreya_700Bold',
         color: '#FF6B6B',
+    },
+    
+    // Loader and Disabled States
+    loader: {
+        marginRight: 8,
+    },
+    disabledButton: {
+        opacity: 0.7,
     },
 })

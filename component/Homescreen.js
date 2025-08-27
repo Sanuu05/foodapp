@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, Text, View, TouchableHighlight, Image, ScrollView, TextInput, Dimensions,ActivityIndicator, LinearGradient, Platform } from 'react-native'
+import { FlatList, StyleSheet, Text, View, TouchableHighlight, Image, ScrollView, TextInput, Dimensions,ActivityIndicator, LinearGradient, Platform, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 // import axios from 'axios';
@@ -65,10 +65,9 @@ const Cath = () => {
         ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
         renderItem={(element) => {
           return (
-            <TouchableHighlight 
+            <TouchableOpacity 
               style={[styles.cathcard, styles.modernShadow]} 
-              underlayColor="transparent" 
-              activeOpacity={0.8} 
+              activeOpacity={1} 
               onPress={() => navigation.navigate('Cath', element.item?.key)}
             >
               <View style={styles.cathcard1}>
@@ -80,7 +79,7 @@ const Cath = () => {
                 </View>
                 <Text style={styles.categoryText}>{element.item?.name}</Text>
               </View>
-            </TouchableHighlight>
+            </TouchableOpacity>
           )
         }}
       />
@@ -111,10 +110,9 @@ const Popular = ({ head, name, pdata }) => {
             ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
             renderItem={(element) => {
               return (
-                <TouchableHighlight 
+                <TouchableOpacity 
                   style={[styles.cathcardp, styles.modernShadow]} 
-                  underlayColor="transparent" 
-                  activeOpacity={0.8} 
+                  activeOpacity={1} 
                   onPress={() => navigation.navigate('Detail', element.item)}
                 >
                   <View style={styles.productCard}>
@@ -135,7 +133,7 @@ const Popular = ({ head, name, pdata }) => {
                       </View>
                     </View>
                   </View>
-                </TouchableHighlight>
+                </TouchableOpacity>
               )
             }}
           />
@@ -163,7 +161,7 @@ const Input = ({ word, sword, click }) => {
         />
         {
           sword ? (
-            <TouchableHighlight onPress={click} underlayColor="transparent">
+            <TouchableHighlight onPress={click} underlayColor="transparent" activeOpacity={1}>
               <Icon name='close' size={24} color="#FF6B6B" />
             </TouchableHighlight>
           ) : null
@@ -219,10 +217,9 @@ const Popularnew = ({ head, data, word, sdata, pdata }) => {
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           renderItem={(element) => {
             return (
-              <TouchableHighlight 
+              <TouchableOpacity 
                 style={[styles.cathcardpn, styles.modernShadow]} 
-                underlayColor="transparent" 
-                activeOpacity={0.8} 
+                activeOpacity={1} 
                 onPress={() => navigation.navigate('Detail', element?.item)}
               >
                 <View style={styles.searchProductCard}>
@@ -243,7 +240,7 @@ const Popularnew = ({ head, data, word, sdata, pdata }) => {
                     </View>
                   </View>
                 </View>
-              </TouchableHighlight>
+              </TouchableOpacity>
             )
           }}
         />
@@ -340,7 +337,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     backgroundColor: '#F8F9FA',
-    paddingBottom: 20,
+    paddingBottom: 100,
   },
   searchView: {
     flex: 1,

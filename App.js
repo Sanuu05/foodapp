@@ -71,7 +71,7 @@ export default function App() {
           headerShown:false
         }} />
         <Stack.Screen name="Detail" component={Detail} options={{
-          headerShown:true
+          headerShown:false
         }} />
          <Stack.Screen name="Cath" component={Cath} options={{
           headerShown:true,
@@ -82,11 +82,11 @@ export default function App() {
           title:'Search'
         }} /> */}
          <Stack.Screen name="Myorder" component={Myorder} options={{
-          headerShown:true,
+          headerShown:false,
           title:'My Orders'
         }} />
         <Stack.Screen name="Myorderd" component={Orderd} options={{
-          headerShown:true,
+          headerShown:false,
           title:'Order Details'
         }} />
             <Stack.Screen name="Login" component={Login} options={{
@@ -98,7 +98,7 @@ export default function App() {
           title:'Search'
         }} />
         <Stack.Screen name="Track" component={Track} options={{
-          headerShown:true,
+          headerShown:false,
           title:''
         }} />
       </Stack.Navigator>
